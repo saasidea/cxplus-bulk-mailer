@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from email.message import EmailMessage
 from typing import Dict, List, Tuple
 
+import markdown
 from dotenv import load_dotenv
 
 PLACEHOLDERS = ("company", "name", "email")
@@ -114,6 +115,20 @@ def render(template: str, lead: Dict[str, str]) -> str:
     return out
 
 
+def markdown_to_html(md_text: str) -> str:
+    html_body = markdown.markdown(
+        md_text,
+        extensions=["extra", "sane_lists", "smarty"],
+    )
+    return f"""<!doctype html>
+<html>
+  <body>
+    {html_body}
+  </body>
+</html>
+"""
+
+
 def build_message(cfg: Config, to_addr: str, subject: str, body: str) -> EmailMessage:
     msg = EmailMessage()
     msg["From"] = f"{cfg.from_name} <{cfg.username}>" if cfg.from_name and cfg.from_name != cfg.username else cfg.username
@@ -124,7 +139,13 @@ def build_message(cfg: Config, to_addr: str, subject: str, body: str) -> EmailMe
     if cfg.bcc_self:
         msg["Bcc"] = cfg.bcc_address
 
+    # Plain-text fallback (Markdown as-is)
     msg.set_content(body)
+
+    # HTML version rendered from Markdown
+    html = markdown_to_html(body)
+    msg.add_alternative(html, subtype="html")
+
     return msg
 
 
@@ -136,7 +157,10 @@ def send_all(csv_path: str, template_path: str) -> int:
     if cfg.max_emails > 0:
         leads = leads[: cfg.max_emails]
 
-    print(f"Loaded {len(leads)} lead(s). DRY_RUN={cfg.dry_run} BCC_SELF={cfg.bcc_self} RATE_LIMIT_SECONDS={cfg.rate_limit_seconds}")
+    print(
+        f"Loaded {len(leads)} lead(s). DRY_RUN={cfg.dry_run} "
+        f"BCC_SELF={cfg.bcc_self} RATE_LIMIT_SECONDS={cfg.rate_limit_seconds}"
+    )
 
     sent = 0
     failed = 0
