@@ -1,0 +1,10 @@
+Subject: Quick question about {{company}}'s customer feedback workflow
+
+Hi {{name}},
+
+I’m Bish from Cxplus.ai. We help teams like {{company}} extract themes + sentiment from customer reviews and support tickets, and turn them into product & CS actions.
+
+If you’re the right owner for customer feedback tooling at {{company}}, I’d love to share a 2-minute overview and see if it’s relevant.
+
+Best,
+Bish
